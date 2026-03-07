@@ -12,6 +12,21 @@ double call_payoff(double ST, double K) {
     return std::max(ST - K, 0.0);
 }
 
+double normal_cdf(double x) {
+    return 0.5 * std::erfc(-x / std::sqrt(2));
+}
+
+double black_scholes_call(double S0, double K, double r, double sigma, double T) {
+
+    double d1 = (std::log(S0 / K) + (r + 0.5 * sigma * sigma) * T)
+                / (sigma * std::sqrt(T));
+
+    double d2 = d1 - sigma * std::sqrt(T);
+
+    return S0 * normal_cdf(d1)
+           - K * std::exp(-r * T) * normal_cdf(d2);
+}
+
 int main() {
     std::mt19937 rng(42);
     std::normal_distribution<double> normal(0.0, 1.0);
@@ -36,7 +51,11 @@ int main() {
     double average_payoff = payoff_sum / N;
     double option_price = std::exp(-r * T) * average_payoff; // Discounting the average payoff back to present value
 
-    std::cout << "Monte Carlo Call Price: " << option_price << "\n";
+    double bs_price = black_scholes_call(S0, K, r, sigma, T);
 
+    std::cout << "Monte Carlo Price: " << option_price << "\n";
+    std::cout << "Black-Scholes Price: " << bs_price << "\n";
+    std::cout << "Difference: " << std::abs(option_price - bs_price) << "\n";
+    
     return 0;
 }
