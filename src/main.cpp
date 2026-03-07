@@ -1,7 +1,6 @@
 #include <iostream>
 #include <random>
 #include <cmath>
-#include <algorithm>
 
 double simulate_terminal_price(double S0, double r, double sigma, double T, double Z) {
     double drift = (r - 0.5 * sigma * sigma) * T;
