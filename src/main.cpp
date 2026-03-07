@@ -23,13 +23,21 @@ int main() {
     double T = 1.0;    // Time to maturity in years
     double K = 100.0; // Strike price
 
-    for (int i = 0; i < 5; ++i) {
+    double payoff_sum = 0.0; // Payoff Accumulator
+    int N = 100000;
+
+    for (int i = 0; i < N; ++i) {
         double Z = normal(rng);
         double ST = simulate_terminal_price(S0, r, sigma, T, Z);
         double payoff = call_payoff(ST, K);
 
-        std::cout << "Z=" << Z << " -> ST=" << ST << " -> Payoff=" << payoff << "\n";
-        
+        payoff_sum += payoff;
     }
+
+    double average_payoff = payoff_sum / N;
+    double option_price = std::exp(-r * T) * average_payoff; // Discounting the average payoff back to present value
+
+    std::cout << "Monte Carlo Call Price: " << option_price << "\n";
+
     return 0;
 }
