@@ -42,29 +42,40 @@ int main() {
     double K = 100.0; // Strike price
 
     double call_sum = 0.0;
-    double put_sum = 0.0;
+    double put_sum  = 0.0;
+    double av_call_sum = 0.0;
+    double av_put_sum  = 0.0;
     int N = 100000;
 
     for (int i = 0; i < N; ++i) {
-        double Z = normal(rng);
-        double ST = simulate_terminal_price(S0, r, sigma, T, Z);
+        double Z  = normal(rng);
+        double ST  = simulate_terminal_price(S0, r, sigma, T,  Z);
+        double ST_ = simulate_terminal_price(S0, r, sigma, T, -Z);
+
         call_sum += call_payoff(ST, K);
         put_sum  += put_payoff(ST, K);
+
+        av_call_sum += 0.5 * (call_payoff(ST, K) + call_payoff(ST_, K));
+        av_put_sum  += 0.5 * (put_payoff(ST, K)  + put_payoff(ST_, K));
     }
 
     double discount = std::exp(-r * T);
-    double mc_call = discount * call_sum / N;
-    double mc_put  = discount * put_sum  / N;
+    double mc_call    = discount * call_sum    / N;
+    double mc_put     = discount * put_sum     / N;
+    double av_call    = discount * av_call_sum / N;
+    double av_put     = discount * av_put_sum  / N;
 
     double bs_call = black_scholes_call(S0, K, r, sigma, T);
     double bs_put  = black_scholes_put(S0, K, r, sigma, T);
 
     std::cout << "--- Call ---\n";
-    std::cout << "MC:  " << mc_call << "  BS: " << bs_call
-              << "  diff: " << std::abs(mc_call - bs_call) << "\n";
+    std::cout << "MC:              " << mc_call << "  diff: " << std::abs(mc_call - bs_call) << "\n";
+    std::cout << "MC (antithetic): " << av_call << "  diff: " << std::abs(av_call - bs_call) << "\n";
+    std::cout << "BS:              " << bs_call << "\n";
     std::cout << "--- Put ---\n";
-    std::cout << "MC:  " << mc_put  << "  BS: " << bs_put
-              << "  diff: " << std::abs(mc_put - bs_put) << "\n";
+    std::cout << "MC:              " << mc_put  << "  diff: " << std::abs(mc_put - bs_put)  << "\n";
+    std::cout << "MC (antithetic): " << av_put  << "  diff: " << std::abs(av_put - bs_put)  << "\n";
+    std::cout << "BS:              " << bs_put  << "\n";
     
     return 0;
 }
